@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-'use strict';
 
 import { Location, getLocation, createScanner, SyntaxKind, ScanError } from 'jsonc-parser';
 import { basename } from 'path';
@@ -26,7 +25,7 @@ export interface IJSONContribution {
 	getDocumentSelector(): DocumentSelector;
 	getInfoContribution(fileName: string, location: Location): Thenable<MarkedString[] | null> | null;
 	collectPropertySuggestions(fileName: string, location: Location, currentWord: string, addValue: boolean, isLast: boolean, result: ISuggestionsCollector): Thenable<any> | null;
-	collectValueSuggestions(fileName: string, location: Location, result: ISuggestionsCollector): Thenable<any> | null;
+	collectValueSuggestions(fileName: string, location: Location, result: ISuggestionsCollector): Thenable<any>;
 	collectDefaultSuggestions(fileName: string, result: ISuggestionsCollector): Thenable<any>;
 	resolveSuggestion?(item: CompletionItem): Thenable<CompletionItem | null> | null;
 }
@@ -124,7 +123,7 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 		let collectPromise: Thenable<any> | null = null;
 
 		if (location.isAtPropertyKey) {
-			const addValue = !location.previousNode || !location.previousNode.columnOffset;
+			const addValue = !location.previousNode || !location.previousNode.colonOffset;
 			const isLast = this.isLast(document, position);
 			collectPromise = this.jsonContribution.collectPropertySuggestions(fileName, location, currentWord, addValue, isLast, collector);
 		} else {
@@ -164,3 +163,5 @@ export class JSONCompletionItemProvider implements CompletionItemProvider {
 		return nextToken === SyntaxKind.CloseBraceToken || nextToken === SyntaxKind.EOF;
 	}
 }
+
+export const xhrDisabled = () => Promise.reject({ responseText: 'Use of online resources is disabled.' });
